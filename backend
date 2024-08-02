@@ -1,0 +1,54 @@
+using Microsoft.AspNetCore.Mvc;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using BulletTrainAPI.Models;
+
+namespace BulletTrainAPI.Controllers
+{
+    [ApiController]
+    [Route("bfhl")]
+    public class BulletTrainController : ControllerBase
+    {
+        private const string USER_ID = "john_doe_17091999";
+        private const string EMAIL = "john@xyz.com";
+        private const string ROLL_NUMBER = "ABCD123";
+
+        [HttpPost]
+        public ActionResult<ResponseData> ProcessData([FromBody] RequestData requestData)
+        {
+            try
+            {
+                var numbers = requestData.Data.Where(x => int.TryParse(x, out _)).ToList();
+                var alphabets = requestData.Data.Where(x => x.All(char.IsLetter)).ToList();
+
+                var highestAlphabet = alphabets.Count > 0 
+                    ? new List<string> { alphabets.OrderByDescending(x => x.ToLower()).First() } 
+                    : new List<string>();
+
+                var response = new ResponseData
+                {
+                    IsSuccess = true,
+                    UserId = USER_ID,
+                    Email = EMAIL,
+                    RollNumber = ROLL_NUMBER,
+                    Numbers = numbers,
+                    Alphabets = alphabets,
+                    HighestAlphabet = highestAlphabet
+                };
+
+                return Ok(response);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { IsSuccess = false, Error = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public ActionResult GetOperationCode()
+        {
+            return Ok(new { OperationCode = 1 });
+        }
+    }
+}
